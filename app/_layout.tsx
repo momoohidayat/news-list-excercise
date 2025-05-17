@@ -13,6 +13,12 @@ export default function RootLayout() {
             title: 'Top Headlines',
           }}
         />
+        <Stack.Screen
+          name="search/[query]"
+          options={{
+            title: 'Search',
+          }}
+        />
       </Stack>
     </QueryClientProvider>
   );

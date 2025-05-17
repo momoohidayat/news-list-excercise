@@ -16,8 +16,22 @@ export async function fetchTopHeadlines(page: number = 1, pageSize: number = 10)
   return response.json();
 }
 
+export async function searchNews(query: string, page: number = 1, pageSize: number = 10): Promise<NewsResponse> {
+  const response = await fetch(
+    `${BASE_URL}/everything?q=${encodeURIComponent(query)}&sortBy=relevancy&page=${page}&pageSize=${pageSize}&apiKey=${API_KEY}`
+  );
+
+  if (!response.ok) {
+    const error = await response.json() as NewsApiError;
+    throw new Error(error.message || 'Failed to search news');
+  }
+
+  return response.json();
+}
+
 const newsApi = {
   fetchTopHeadlines,
+  searchNews,
 };
 
 export default newsApi;

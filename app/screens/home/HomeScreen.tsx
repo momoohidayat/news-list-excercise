@@ -1,13 +1,19 @@
+import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import React from 'react';
-import { FlatList, RefreshControl, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { RefreshControl } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { ActivityIndicator } from 'react-native-paper';
-import { fetchTopHeadlines } from '../api/news';
-import { NewsArticle } from '../api/types';
-import NewsCard from '../components/NewsCard';
+import { ActivityIndicator, Searchbar } from 'react-native-paper';
+import { fetchTopHeadlines } from '../../api/news';
+import { NewsArticle } from '../../api/types';
+import NewsCard from '../../components/NewsCard';
+
+import styles from './styles';
 
 export default function HomeScreen() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
   const {
     data,
     fetchNextPage,
@@ -43,12 +49,25 @@ export default function HomeScreen() {
 
   const articles = data?.pages.flatMap(page => page.articles) ?? [];
 
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(`/search/${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   return (
     <GestureHandlerRootView style={styles.container}>
-      <FlatList
+      <Searchbar
+        placeholder="Search news..."
+        onChangeText={setSearchQuery}
+        value={searchQuery}
+        onSubmitEditing={handleSearch}
+        style={styles.searchBar}
+      />
+      <FlashList
         data={articles}
-        renderItem={({ item, index }) => (
-          <NewsCard article={item as NewsArticle} index={index} />
+        renderItem={({ item, index }: { item: NewsArticle; index: number }) => (
+          <NewsCard article={item} index={index} />
         )}
         keyExtractor={(item) => item.url}
         onEndReached={handleEndReached}
@@ -69,21 +88,3 @@ export default function HomeScreen() {
     </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  list: {
-    paddingVertical: 8,
-  },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footer: {
-    paddingVertical: 16,
-  },
-});
